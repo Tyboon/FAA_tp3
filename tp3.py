@@ -1,9 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def chargement (x,y,deg=20) :
 	X = np.loadtxt("x.txt")
 	Y = np.loadtxt("y.txt")
 
+	X = np.asmatrix(X)
+	Y = np.asmatrix(Y)
 	init = np.ones((X.shape))
 
 	X = np.vstack((init,X))
@@ -16,7 +19,7 @@ def chargement (x,y,deg=20) :
 
 # teta = (XXt)**-1 * (XY)
 def calculTheta (x,y) :
-	tmp1 = np.asmatrix(np.dot(x,x.T))
+	tmp1 = np.dot(x,x.T)
 	tmp2 = np.dot(x,y)
 	theta = np.dot(tmp1.I, tmp2)
 	return theta
@@ -24,25 +27,24 @@ def calculTheta (x,y) :
 # Calcul des theta pour Y et chaque polynome X avec le moindre carre
 def calculThetas(X,Y) :
 	thetas = [] 
-	for i in range(1,X.shape[0]) :
+	for i in range(2,X.shape[0]) :
 		thetas.append(calculTheta(X[0:i],Y))
 	return thetas
 
 # Calcul du polynome avec le theta donnee
-def calculPoly(X,Y,theta) :
-	poly = 0
-	degre = len(theta)
-	for i in range(1,degre) :
-		poly += X[degre] * theta[i]
+def calculPoly(X,theta) :
+	degre = theta.shape[0]
+	poly = np.zeros(X.shape[0])
+	for i in xrange(0,degre) :
+		poly += theta.item(i) * X ** (i)
 	return poly
 
-# Calcul de tout les polynomes
-def calculPolys(X,Y,thetas) :
-	degreMax = X.shape[0]
+# Calcul de tous les polynomes
+def calculPolys(X,thetas) :
 	res = []
-	for i in range(1,degreMax-1) :
-		print i
-		tmp = calculPoly(X[0:i],Y,thetas[i])
+	tmp=[]
+	for t in thetas :
+		tmp = calculPoly(alea,t)
 		res.append(tmp)
 	return res
 
@@ -50,9 +52,18 @@ def calculPolys(X,Y,thetas) :
 def calculRisqueReel(X,Y,K=10) :
 	pass
 
+def dessiner (x,y,a,poly) :
+	plt.plot(x,y,'b.')
+	plt.plot(a,poly,'r-')
+	plt.ylabel('position')
+	plt.xlabel('temps')
+	plt.show()
+
 
 if "__main__" == __name__ :
 	X,Y = chargement("x.txt","y.txt")
-	thetas = calculThetas(X,Y)
-	polys = calculPolys(X,Y,thetas)
-	print polys
+	thetas = calculThetas(X,Y.T)
+	alea = np.arange(-2.5,2.6,0.1)
+	polys = calculPolys(alea,thetas)
+	for poly in polys :
+		dessiner(X[1],Y,alea,poly)
